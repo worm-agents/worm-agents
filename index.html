@@ -49,6 +49,7 @@
   @media (max-width: 720px) { .agents { grid-template-columns: 1fr; } }
   .agent { display: flex; flex-direction: column; gap: 14px; padding: 28px; border: 1px solid var(--line); border-radius: 20px; background: var(--card); text-decoration: none; transition: border-color .15s, transform .15s; }
   .agent:hover { border-color: var(--soft); transform: translateY(-2px); }
+  .agent .icon { width: 84px; height: 84px; margin: -10px 0 -6px -10px; }
   .agent .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .agent h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 32px; line-height: 1; margin: 0; letter-spacing: -.01em; }
   .agent .area { font-size: 13px; color: var(--muted); }
@@ -108,24 +109,28 @@
     <h2>The agents</h2>
     <div class="agents">
       <a class="agent" href="https://github.com/worm-agents/workworm">
+        <img class="icon" src="icons/workworm.svg" alt="" width="84" height="84">
         <div class="top"><h3>WorkWorm</h3><span class="status live">Available</span></div>
         <span class="area">Job search</span>
         <p>Collects offers from job boards, ranks them against your profile, tailors your CV and follows up with recruiters by email.</p>
         <div class="foot"><span>View project →</span><span>Python</span></div>
       </a>
       <a class="agent" href="https://github.com/worm-agents/loveworm">
+        <img class="icon" src="icons/loveworm.svg" alt="" width="84" height="84">
         <div class="top"><h3>LoveWorm</h3><span class="status live">Available</span></div>
         <span class="area">Dating</span>
         <p>Ranks your matches by interest and drafts replies in your own voice. Nothing is sent until you approve it.</p>
         <div class="foot"><span>View project →</span><span>Python</span></div>
       </a>
       <a class="agent" href="https://github.com/worm-agents/investworm">
+        <img class="icon" src="icons/investworm.svg" alt="" width="84" height="84">
         <div class="top"><h3>InvestWorm</h3><span class="status">In development</span></div>
         <span class="area">Investing</span>
         <p>Researches prices, news and filings for your watchlist and explains its reasoning. A research tool, not financial advice.</p>
         <div class="foot"><span>View project →</span><span>Python</span></div>
       </a>
       <a class="agent" href="https://github.com/worm-agents/mediaworm">
+        <img class="icon" src="icons/socialworm.svg" alt="" width="84" height="84">
         <div class="top"><h3>SocialWorm</h3><span class="status">In development</span></div>
         <span class="area">Social media</span>
         <p>Plans your content, adapts each post to every platform and drafts replies to comments, all for you to approve.</p>
