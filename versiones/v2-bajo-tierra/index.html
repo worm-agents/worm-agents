@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worm Agents · Bajo tierra</title>
+<meta name="description" content="Agentes de IA open source que se ocupan de las partes tediosas de la vida. Corren en tu computadora y no sale nada sin tu OK.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --soil: #24160f;
+    --soil-2: #34221a;
+    --text: #f6e9da;
+    --muted: #c9b29b;
+    --lamp: #ffb44d;
+    --worm: #f39aac;
+    --grass: #8fbf5f;
+    --sky: #bfe0ef;
+    --display: "Young Serif", Georgia, serif;
+    --body: "Work Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: clip; }
+  body { margin: 0; background: var(--soil); color: var(--text); font: 17px/1.65 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--lamp); outline-offset: 3px; border-radius: 4px; }
+
+  nav { position: fixed; inset: 0 0 auto; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 18px clamp(20px, 4vw, 48px); }
+  .brand { font-family: var(--display); font-size: 21px; text-decoration: none; color: var(--soil); background: var(--text); padding: 6px 14px 7px; border-radius: 999px; }
+  nav .links { display: flex; gap: 8px; }
+  nav .links a { text-decoration: none; font-size: 15px; font-weight: 500; color: var(--soil); background: rgba(246, 233, 218, .82); padding: 7px 14px; border-radius: 999px; transition: background-color .15s ease; }
+  nav .links a:hover { background: var(--text); }
+
+  /* Depth gauge */
+  .gauge { position: fixed; right: clamp(14px, 3vw, 40px); top: 50%; transform: translateY(-50%); z-index: 9; display: none; flex-direction: column; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); transition: opacity .3s ease; }
+  .gauge .bar { width: 3px; height: 180px; background: rgba(246, 233, 218, .18); border-radius: 3px; position: relative; }
+  .gauge .fill { position: absolute; inset: 0 0 auto; height: 0; background: var(--lamp); border-radius: 3px; }
+  .gauge b { font-family: var(--display); font-weight: 400; font-size: 20px; color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* Default (no JS, reduced motion): a plain vertical dig */
+  .dig .frame { position: relative; }
+  .dig .frame img { display: block; width: 100%; height: auto; }
+  .intro { position: relative; }
+  .intro .copy { position: absolute; left: clamp(20px, 5vw, 72px); top: 22%; max-width: min(520px, 34vw); }
+  h1 { font-family: var(--display); font-weight: 400; font-size: clamp(40px, 5.6vw, 84px); line-height: 1; letter-spacing: -.02em; margin: 0 0 18px; text-shadow: 0 2px 24px rgba(20, 10, 5, .6); overflow-wrap: break-word; }
+  .intro p { font-size: 19px; color: var(--text); margin: 0 0 18px; text-shadow: 0 1px 14px rgba(20, 10, 5, .8); }
+  .hint { font-size: 15px; color: var(--muted); }
+
+  .room .panel { padding: 32px clamp(20px, 5vw, 72px) 56px; max-width: 720px; }
+  .room h2 { font-family: var(--display); font-weight: 400; font-size: clamp(38px, 4.6vw, 64px); line-height: 1; margin: 0 0 6px; }
+  .room .area { color: var(--lamp); font-weight: 500; margin: 0 0 14px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .tag { font-size: 13px; font-weight: 600; padding: 3px 11px; border-radius: 999px; border: 1px solid rgba(246, 233, 218, .35); color: var(--muted); }
+  .tag.live { border-color: var(--grass); color: var(--grass); }
+  .room p { margin: 0 0 18px; color: var(--text); font-size: 18px; }
+  .room a.go { display: inline-block; font-weight: 600; text-decoration: none; background: var(--lamp); color: var(--soil); padding: 11px 20px; border-radius: 999px; transition: transform .15s cubic-bezier(.23, 1, .32, 1); }
+  .room a.go:active { transform: scale(.96); }
+
+  /* Camera mode, enabled by JS */
+  .cam .dig { height: 640vh; }
+  .cam .dig .viewport { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+  .cam .dig .frame { position: absolute; inset: 0; will-change: transform, opacity; }
+  .cam .dig .frame img { width: 100%; height: 100%; object-fit: cover; }
+  .cam .intro .copy { top: 26%; }
+  .cam .room { position: absolute; inset: 0; pointer-events: none; }
+  .cam .room .panel { position: absolute; left: clamp(20px, 5vw, 72px); bottom: clamp(28px, 9vh, 96px); max-width: 440px; padding: 26px 28px 28px; background: rgba(28, 17, 11, .78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(246, 233, 218, .12); border-radius: 22px; will-change: transform, opacity; }
+  .cam .room.on .panel { pointer-events: auto; }
+  .cam .room p { font-size: 17px; }
+  .cam .gauge { display: flex; }
+
+  /* Surface section */
+  .surface { background: linear-gradient(var(--soil) 0, var(--soil-2) 100%); padding: 120px clamp(20px, 5vw, 72px) 56px; }
+  .surface .inner { max-width: 1120px; margin: 0 auto; }
+  .surface h3 { font-family: var(--display); font-weight: 400; font-size: clamp(32px, 4vw, 52px); line-height: 1.05; margin: 0 0 40px; max-width: 18ch; }
+  .rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+  .rules h4 { font-size: 19px; font-weight: 600; margin: 0 0 6px; color: var(--lamp); }
+  .rules p { margin: 0; color: var(--muted); }
+  .needs { margin-top: 64px; padding: 24px 28px; border-radius: 18px; border: 1px dashed rgba(246, 233, 218, .3); color: var(--muted); max-width: 760px; }
+  .needs b { color: var(--text); font-weight: 600; }
+  footer { margin-top: 96px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 15px; color: var(--muted); border-top: 1px solid rgba(246, 233, 218, .14); padding-top: 24px; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  @media (max-width: 760px) {
+    .intro .copy { position: static; max-width: none; padding: 96px 20px 24px; background: var(--soil); }
+    .cam .intro .copy { position: absolute; top: auto; bottom: 0; background: linear-gradient(transparent, rgba(28,17,11,.92) 30%); padding-top: 80px; }
+    .cam .room .panel { left: 12px; right: 12px; bottom: 16px; max-width: none; padding: 20px; }
+    .rules { grid-template-columns: 1fr; gap: 28px; }
+    .gauge { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="/">Worm Agents</a>
+  <div class="links"><a href="#tuneles">Agentes</a><a href="https://github.com/worm-agents">GitHub</a></div>
+</nav>
+
+<div class="gauge" aria-hidden="true"><b id="depth">0 cm</b><div class="bar"><div class="fill" id="fill"></div></div><span>profundidad</span></div>
+
+<main>
+  <section class="dig" id="tuneles">
+    <div class="viewport">
+      <div class="frame intro" data-i="-1">
+        <img src="../assets/underground.webp" alt="Corte de tierra con cuatro cuevas iluminadas, en cada una un gusano rosa trabajando" width="1024" height="572">
+        <div class="copy">
+          <h1>Abajo de todo, los worms laburan</h1>
+          <p>Agentes de IA open source que hacen el trabajo tedioso en tu compu. Nada sale a la superficie sin tu OK.</p>
+          <span class="hint">Bajá para visitar cada cueva</span>
+        </div>
+      </div>
+
+      <article class="room" data-i="0">
+        <div class="frame"><img src="../assets/ug-work.webp" alt="WorkWorm con casco amarillo en un escritorio lleno de papeles" width="1024" height="572" loading="lazy"></div>
+        <div class="panel">
+          <h2>WorkWorm</h2>
+          <div class="area">Búsqueda de trabajo <span class="tag live">Disponible</span></div>
+          <p>Junta ofertas de los portales de empleo de Argentina, las ordena según tu perfil, adapta tu CV y sigue a los reclutadores por correo.</p>
+          <a class="go" href="https://github.com/worm-agents/workworm">Ver WorkWorm en GitHub</a>
+        </div>
+      </article>
+
+      <article class="room" data-i="1">
+        <div class="frame"><img src="../assets/ug-love.webp" alt="LoveWorm abrazando un corazón entre cartas de amor" width="1024" height="572" loading="lazy"></div>
+        <div class="panel">
+          <h2>LoveWorm</h2>
+          <div class="area">Citas <span class="tag live">Disponible</span></div>
+          <p>Ordena tus matches por interés y escribe borradores con tu forma de hablar. No se envía nada hasta que lo aprobás.</p>
+          <a class="go" href="https://github.com/worm-agents/loveworm">Ver LoveWorm en GitHub</a>
+        </div>
+      </article>
+
+      <article class="room" data-i="2">
+        <div class="frame"><img src="../assets/ug-invest.webp" alt="InvestWorm con monóculo junto a pilas de monedas y un gráfico" width="1024" height="572" loading="lazy"></div>
+        <div class="panel">
+          <h2>InvestWorm</h2>
+          <div class="area">Inversiones <span class="tag">En desarrollo</span></div>
+          <p>Investiga precios, noticias y balances de las empresas que seguís y explica su razonamiento. Es una herramienta de investigación, no un consejo financiero.</p>
+          <a class="go" href="https://github.com/worm-agents/investworm">Ver InvestWorm en GitHub</a>
+        </div>
+      </article>
+
+      <article class="room" data-i="3">
+        <div class="frame"><img src="../assets/ug-media.webp" alt="MediaWorm con un celular frente a un aro de luz" width="1024" height="572" loading="lazy"></div>
+        <div class="panel">
+          <h2>MediaWorm</h2>
+          <div class="area">Redes sociales <span class="tag">En desarrollo</span></div>
+          <p>Planifica tu contenido, adapta cada posteo a cada red y escribe borradores de respuesta a los comentarios, todo para que vos lo apruebes.</p>
+          <a class="go" href="https://github.com/worm-agents/mediaworm">Ver MediaWorm en GitHub</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="inner">
+      <h3>Lo que pasa bajo tierra queda bajo tierra</h3>
+      <div class="rules">
+        <div><h4>Corre en tu compu</h4><p>Tus cuentas, chats y datos quedan en tu computadora. No hay ningún servidor de Worm Agents.</p></div>
+        <div><h4>Vos tenés el control</h4><p>Los agentes redactan y sugieren. Lo que sale en tu nombre espera tu OK o un límite que pongas vos.</p></div>
+        <div><h4>Open source</h4><p>Todos los agentes están en GitHub. Leé el código, cambialo y usalo a tu manera.</p></div>
+      </div>
+      <p class="needs"><b>Por ahora funcionan con Claude y están pensados para Argentina.</b> Necesitás una PC con Windows y <a href="https://claude.com/claude-code">Claude Code</a> con tu cuenta de Claude: los agentes usan tu propia suscripción, sin otra API key. LoveWorm también puede usar cualquier API compatible con OpenAI.</p>
+      <footer><span>© 2026 Worm Agents</span><a href="https://github.com/worm-agents">github.com/worm-agents</a></footer>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.documentElement.classList.add('cam');
+  const dig = document.querySelector('.dig');
+  const intro = document.querySelector('.intro');
+  const rooms = [...document.querySelectorAll('.room')];
+  const depth = document.getElementById('depth');
+  const fill = document.getElementById('fill');
+  const gauge = document.querySelector('.gauge');
+  // where each cave sits in the overview image (fractions of width / height)
+  const caves = [[.50, .50], [.72, .38], [.69, .77], [.89, .61]];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  rooms.forEach(r => r.querySelector('img').loading = 'eager');
+
+  function frame() {
+    const r = dig.getBoundingClientRect();
+    const span = r.height - innerHeight;
+    const p = clamp(-r.top / span);
+    const t = p * 5; // 0..5: intro, then four caves
+
+    // Intro: zoom toward the first cave, then dissolve into it
+    const z = ease(clamp((t - .35) / 1.05));
+    const [cx, cy] = caves[0];
+    const s = 1 + z * 1.6;
+    intro.style.transform = `translate(${(.5 - cx) * z * 100 * s}%, ${(.5 - cy) * z * 100 * s}%) scale(${s})`;
+    intro.style.opacity = 1 - clamp((t - 1.0) / .4);
+    intro.querySelector('.copy').style.opacity = 1 - clamp(t / .45);
+
+    rooms.forEach((room, i) => {
+      const c = 1.6 + i * 1.0;           // centre of this cave on the timeline
+      const d = t - c;
+      const fr = room.querySelector('.frame');
+      const pn = room.querySelector('.panel');
+      // dig downwards: the cave you leave slides up, the next one rises from below
+      let y = -Math.sign(d) * ease(clamp((Math.abs(d) - .3) / .7)) * 100;
+      if (i === 3 && d > 0) y = 0;
+      let o = Math.abs(y) < 100 ? 1 : 0;
+      if (i === 0 && d < 0) { y = 0; o = clamp((t - 1.0) / .4); }
+      fr.style.opacity = o;
+      fr.style.transform = `translateY(${y}%)`;
+      pn.style.opacity = clamp((.48 - Math.abs(i === 3 ? Math.min(d, 0) : d)) / .18);
+      pn.style.transform = `translateY(${d * 40}px)`;
+      room.classList.toggle('on', o > .5 && Math.abs(y) < 50);
+    });
+
+    const cm = Math.round(p * 60);
+    depth.textContent = `${cm} cm`;
+    fill.style.height = `${p * 100}%`;
+    gauge.style.opacity = r.bottom > innerHeight * .6 ? 1 : 0;
+  }
+  let raf = 0;
+  const req = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(); }); };
+  addEventListener('scroll', req, { passive: true });
+  addEventListener('resize', req);
+  frame();
+})();
+</script>
+</body>
+</html>

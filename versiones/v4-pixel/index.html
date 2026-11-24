@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worm Agents · Pixel</title>
+<meta name="description" content="Agentes de IA open source que se ocupan de las partes tediosas de la vida. Corren en tu computadora y no sale nada sin tu OK.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #1b1f3b;
+    --panel: #252a55;
+    --edge: #4a52a3;
+    --text: #eef0ff;
+    --dim: #a3a9e0;
+    --pink: #ff8fb1;
+    --gold: #ffd34d;
+    --leaf: #7ee0a1;
+    --dirt: #6b4a35;
+    --dirt-2: #4e3526;
+    --grass: #4fb06b;
+    --head: "Pixelify Sans", monospace;
+    --body: VT323, monospace;
+    --px: 4px;
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: clip; }
+  body { margin: 0; background: var(--night); color: var(--text); font: 24px/1.15 var(--body); -webkit-font-smoothing: none; }
+  a { color: inherit; }
+  :focus-visible { outline: var(--px) solid var(--gold); outline-offset: var(--px); }
+  img.px { image-rendering: pixelated; }
+
+  /* chunky pixel frame */
+  .frame { background: var(--panel); box-shadow: 0 calc(var(--px) * -1) 0 0 var(--edge), 0 var(--px) 0 0 var(--edge), calc(var(--px) * -1) 0 0 0 var(--edge), var(--px) 0 0 0 var(--edge), 0 0 0 calc(var(--px) * 2) var(--night); }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 22px 0; font-family: var(--head); font-size: 18px; }
+  .brand { text-decoration: none; font-weight: 700; color: var(--pink); }
+  nav .links { display: flex; gap: 24px; }
+  nav .links a { text-decoration: none; color: var(--dim); }
+  nav .links a:hover { color: var(--text); }
+
+  /* twinkling pixel stars */
+  .sky { position: absolute; inset: 0 0 auto; height: 520px; pointer-events: none; z-index: -1; }
+  .sky i { position: absolute; width: var(--px); height: var(--px); background: var(--dim); opacity: .5; }
+
+  .hero { text-align: center; padding: 30px 0 0; position: relative; }
+  h1 { font-family: var(--head); font-weight: 700; font-size: clamp(44px, 8vw, 96px); line-height: 1; margin: 0; color: var(--text); text-shadow: var(--px) var(--px) 0 var(--pink); letter-spacing: .01em; }
+  .sub { color: var(--dim); margin: 16px auto 0; max-width: 34ch; }
+
+  .select { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 48px 0 0; list-style: none; padding: 0; }
+  .slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 26px 8px 16px; cursor: pointer; border: 0; color: inherit; font: inherit; width: 100%; background: transparent; }
+  .slot .box { position: absolute; inset: 0; }
+  .slot img { position: relative; height: 180px; width: auto; }
+  .slot .name { position: relative; font-family: var(--head); font-size: 20px; }
+  .slot[aria-selected="true"] .box { box-shadow: 0 calc(var(--px) * -1) 0 0 var(--gold), 0 var(--px) 0 0 var(--gold), calc(var(--px) * -1) 0 0 0 var(--gold), var(--px) 0 0 0 var(--gold); }
+  .slot[aria-selected="true"] .name { color: var(--gold); }
+  .slot .arrow { position: absolute; top: -26px; left: 50%; width: 0; height: 0; border: 10px solid transparent; border-top: 12px solid var(--gold); transform: translateX(-50%); opacity: 0; }
+  .slot[aria-selected="true"] .arrow { opacity: 1; animation: blink 1s steps(1) infinite; }
+  .slot[aria-selected="true"] img { animation: bob .8s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes bob { 50% { transform: translateY(calc(var(--px) * -2)); } }
+
+  .detail { margin: 36px auto 0; max-width: 760px; text-align: left; padding: 26px 30px; }
+  .detail h2 { font-family: var(--head); font-weight: 700; font-size: 40px; margin: 0 0 4px; color: var(--pink); }
+  .detail dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 18px; margin: 10px 0 16px; color: var(--dim); }
+  .detail dt { color: var(--dim); }
+  .detail dd { margin: 0; color: var(--text); }
+  .detail dd.live { color: var(--leaf); }
+  .detail dd.wip { color: var(--gold); }
+  .detail p { margin: 0 0 20px; }
+  .detail .row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .press { display: inline-block; font-family: var(--head); font-size: 20px; text-decoration: none; background: var(--pink); color: var(--night); padding: 10px 18px; box-shadow: 0 var(--px) 0 0 #b85c7a; transition: transform .08s steps(1); }
+  .press:hover { background: #ffa6c3; }
+  .press:active { transform: translateY(var(--px)); box-shadow: none; }
+  .keys { color: var(--dim); font-size: 20px; }
+  .keys kbd { font: inherit; color: var(--text); padding: 0 6px; background: var(--edge); }
+  .js .detail[hidden] { display: none; }
+  .detail + .detail { margin-top: 28px; }
+
+  /* the ground, with a worm crawling across */
+  .ground { position: relative; height: 120px; margin-top: 72px; background:
+      linear-gradient(var(--grass) 0 12px, var(--dirt) 12px 64px, var(--dirt-2) 64px);
+    image-rendering: pixelated; overflow-x: clip; overflow-y: visible; }
+  .ground::before { content: ""; position: absolute; inset: 12px 0 0; background-image: radial-gradient(var(--dirt-2) 2px, transparent 2px), radial-gradient(#8a6347 2px, transparent 2px); background-size: 36px 28px, 52px 40px; background-position: 0 6px, 18px 22px; }
+  .crawler { position: absolute; top: -34px; left: 0; height: 48px; image-rendering: pixelated; animation: crawl 26s steps(130) infinite; }
+  @keyframes crawl { from { transform: translateX(-80px); } to { transform: translateX(calc(100vw + 80px)); } }
+
+  .rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; padding: 88px 0 0; }
+  .rules > h3, .before h3 { grid-column: 1 / -1; font-family: var(--head); font-size: 32px; margin: 0; color: var(--gold); }
+  .rule { padding: 22px; }
+  .rule h4 { font-family: var(--head); font-size: 22px; margin: 0 0 8px; color: var(--text); }
+  .rule p { margin: 0; color: var(--dim); }
+
+  .before { margin: 72px 0 0; padding: 26px 30px; }
+  .before h3 { margin-bottom: 10px; }
+  .before p { margin: 0; color: var(--dim); }
+  .before b { color: var(--text); font-weight: 400; }
+  .before a { color: var(--pink); }
+
+  footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 64px 0 40px; color: var(--dim); font-size: 22px; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  @media (max-width: 760px) {
+    :root { --px: 3px; }
+    .select { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .slot img { height: 120px; }
+    .rules { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/">Worm Agents</a>
+    <div class="links"><a href="#elegi">Agentes</a><a href="https://github.com/worm-agents">GitHub</a></div>
+  </nav>
+
+  <header class="hero" id="elegi">
+    <h1>Elegí tu worm</h1>
+    <p class="sub">Agentes de IA open source que corren en tu compu. Ellos juegan la parte aburrida, vos decidís.</p>
+
+    <div class="select" role="tablist" aria-label="Agentes">
+      <button class="slot" role="tab" id="t0" aria-controls="d0" aria-selected="true"><span class="box frame"></span><span class="arrow"></span><img class="px" src="../assets/px-work.png" alt="" width="47" height="50"><span class="name">WorkWorm</span></button>
+      <button class="slot" role="tab" id="t1" aria-controls="d1" aria-selected="false" tabindex="-1"><span class="box frame"></span><span class="arrow"></span><img class="px" src="../assets/px-love.png" alt="" width="51" height="45"><span class="name">LoveWorm</span></button>
+      <button class="slot" role="tab" id="t2" aria-controls="d2" aria-selected="false" tabindex="-1"><span class="box frame"></span><span class="arrow"></span><img class="px" src="../assets/px-invest.png" alt="" width="39" height="47"><span class="name">InvestWorm</span></button>
+      <button class="slot" role="tab" id="t3" aria-controls="d3" aria-selected="false" tabindex="-1"><span class="box frame"></span><span class="arrow"></span><img class="px" src="../assets/px-media.png" alt="" width="54" height="50"><span class="name">MediaWorm</span></button>
+    </div>
+
+    <section class="detail frame" role="tabpanel" id="d0" aria-labelledby="t0">
+      <h2>WorkWorm</h2>
+      <dl><dt>Especialidad</dt><dd>Búsqueda de trabajo</dd><dt>Estado</dt><dd class="live">Disponible</dd><dt>Hecho en</dt><dd>Python</dd></dl>
+      <p>Junta ofertas de los portales de empleo de Argentina, las ordena según tu perfil, adapta tu CV y sigue a los reclutadores por correo.</p>
+      <div class="row"><a class="press" href="https://github.com/worm-agents/workworm">Jugar con WorkWorm</a><span class="keys">Mové con <kbd>←</kbd> <kbd>→</kbd></span></div>
+    </section>
+    <section class="detail frame" role="tabpanel" id="d1" aria-labelledby="t1">
+      <h2>LoveWorm</h2>
+      <dl><dt>Especialidad</dt><dd>Citas</dd><dt>Estado</dt><dd class="live">Disponible</dd><dt>Hecho en</dt><dd>Python</dd></dl>
+      <p>Ordena tus matches por interés y escribe borradores con tu forma de hablar. No se envía nada hasta que lo aprobás.</p>
+      <div class="row"><a class="press" href="https://github.com/worm-agents/loveworm">Jugar con LoveWorm</a><span class="keys">Mové con <kbd>←</kbd> <kbd>→</kbd></span></div>
+    </section>
+    <section class="detail frame" role="tabpanel" id="d2" aria-labelledby="t2">
+      <h2>InvestWorm</h2>
+      <dl><dt>Especialidad</dt><dd>Inversiones</dd><dt>Estado</dt><dd class="wip">En desarrollo</dd><dt>Hecho en</dt><dd>Python</dd></dl>
+      <p>Investiga precios, noticias y balances de las empresas que seguís y explica su razonamiento. Es una herramienta de investigación, no un consejo financiero.</p>
+      <div class="row"><a class="press" href="https://github.com/worm-agents/investworm">Ver InvestWorm</a><span class="keys">Mové con <kbd>←</kbd> <kbd>→</kbd></span></div>
+    </section>
+    <section class="detail frame" role="tabpanel" id="d3" aria-labelledby="t3">
+      <h2>MediaWorm</h2>
+      <dl><dt>Especialidad</dt><dd>Redes sociales</dd><dt>Estado</dt><dd class="wip">En desarrollo</dd><dt>Hecho en</dt><dd>Python</dd></dl>
+      <p>Planifica tu contenido, adapta cada posteo a cada red y escribe borradores de respuesta a los comentarios, todo para que vos lo apruebes.</p>
+      <div class="row"><a class="press" href="https://github.com/worm-agents/mediaworm">Ver MediaWorm</a><span class="keys">Mové con <kbd>←</kbd> <kbd>→</kbd></span></div>
+    </section>
+  </header>
+</div>
+
+<div class="ground" aria-hidden="true"><img class="crawler" src="../assets/px-love.png" alt="" width="51" height="45"></div>
+
+<div class="wrap">
+  <section class="rules" aria-labelledby="reglas">
+    <h3 id="reglas">Reglas del juego</h3>
+    <div class="rule frame"><h4>Corre en tu compu</h4><p>Tus cuentas, chats y datos quedan en tu computadora. No hay ningún servidor de Worm Agents.</p></div>
+    <div class="rule frame"><h4>Vos tenés el control</h4><p>Los agentes redactan y sugieren. Lo que sale en tu nombre espera tu OK o un límite que pongas vos.</p></div>
+    <div class="rule frame"><h4>Open source</h4><p>Todos los agentes están en GitHub. Leé el código, cambialo y usalo a tu manera.</p></div>
+  </section>
+
+  <section class="before frame">
+    <h3>Antes de jugar</h3>
+    <p><b>Por ahora funcionan con Claude y están pensados para Argentina.</b> Necesitás una PC con Windows y <a href="https://claude.com/claude-code">Claude Code</a> con tu cuenta de Claude: usan tu propia suscripción, sin otra API key. LoveWorm también puede usar cualquier API compatible con OpenAI.</p>
+  </section>
+
+  <footer><span>© 2026 Worm Agents</span><a href="https://github.com/worm-agents">github.com/worm-agents</a></footer>
+</div>
+
+<script>
+(() => {
+  document.documentElement.classList.add('js');
+  const tabs = [...document.querySelectorAll('.slot')];
+  const panels = tabs.map(t => document.getElementById(t.getAttribute('aria-controls')));
+  function pick(i, focus) {
+    tabs.forEach((t, k) => { const on = k === i; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; panels[k].hidden = !on; });
+    if (focus) tabs[i].focus();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => pick(i));
+    t.addEventListener('mouseenter', () => pick(i));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input, textarea')) return;
+    const cur = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+    if (e.key === 'ArrowRight') { e.preventDefault(); pick((cur + 1) % 4, true); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); pick((cur + 3) % 4, true); }
+    if (e.key === 'Enter' && tabs.includes(document.activeElement)) panels[cur].querySelector('.press').click();
+  });
+  pick(0);
+
+  // a handful of stars
+  const sky = document.querySelector('.sky');
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('i');
+    s.style.left = Math.round(Math.random() * 100) + '%';
+    s.style.top = Math.round(Math.random() * 500) + 'px';
+    if (Math.random() < .3) s.style.background = '#ff8fb1';
+    sky.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

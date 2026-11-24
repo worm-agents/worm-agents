@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worm Agents · Plastilina</title>
+<meta name="description" content="Agentes de IA open source que se ocupan de las partes tediosas de la vida. Corren en tu computadora y no sale nada sin tu OK.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ecebe8;
+    --shelf: #dedcd7;
+    --ink: #221d1f;
+    --muted: #6d6669;
+    --clay: #df6f80;
+    --clay-deep: #b9505f;
+    --hat: #f2c230;
+    --live: #2f7d55;
+    --paper: #f7f6f4;
+    --display: "Bricolage Grotesque", "Arial Black", sans-serif;
+    --body: Figtree, system-ui, sans-serif;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+    --out: cubic-bezier(.23, 1, .32, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: clip; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--clay); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 26px 0; }
+  .brand { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -.02em; text-decoration: none; display: flex; gap: 10px; align-items: center; }
+  .brand img { width: 34px; height: 34px; }
+  nav .links { display: flex; gap: 28px; font-size: 15px; font-weight: 500; }
+  nav .links a { text-decoration: none; color: var(--muted); transition: color .15s ease; }
+  nav .links a:hover { color: var(--ink); }
+
+  .hero { padding: 24px 0 0; text-align: center; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 6.2vw, 84px); line-height: .94; letter-spacing: -.045em; margin: 0 auto; max-width: 18ch; overflow-wrap: break-word; }
+  .lead { font-size: 20px; color: var(--muted); max-width: 40ch; margin: 18px auto 26px; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 15px 26px; border-radius: 999px; font-weight: 600; font-size: 16px; text-decoration: none; border: 2px solid var(--ink); transition: transform .16s var(--out), background-color .16s ease; }
+  .btn:active { transform: scale(.96); }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: #3a3235; }
+  .btn.ghost:hover { background: var(--paper); }
+  .btn svg { width: 18px; height: 18px; }
+
+  /* The stage: four clay worms standing on a shelf */
+  .stage { position: relative; margin-top: 28px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: 8px; padding: 0 12px; }
+  .stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: -18px; height: 46px; background: var(--shelf); border-radius: 50%; z-index: -1; filter: blur(.5px); }
+  .actor { position: relative; display: flex; flex-direction: column; align-items: center; text-decoration: none; }
+  .actor { animation: drop .9s var(--spring) both; animation-delay: calc(var(--i) * 110ms); }
+  .actor img { width: 100%; max-width: 230px; height: auto; transform-origin: 50% 100%; animation: idle 3.6s ease-in-out infinite; animation-delay: calc(1.2s + var(--i) * 400ms); }
+  .actor:hover img, .actor:focus-visible img { animation: hop .55s var(--out); }
+  .actor .tag { position: absolute; top: -6px; background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px; font-weight: 600; font-size: 14px; opacity: 0; transform: translateY(6px) scale(.95); transition: opacity .18s ease, transform .18s var(--out); pointer-events: none; }
+  .actor:hover .tag, .actor:focus-visible .tag { opacity: 1; transform: none; }
+  @keyframes drop { from { transform: translateY(-120px) scaleY(1.1); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
+  @keyframes idle { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.015, .975); } }
+  @keyframes hop { 0% { transform: scale(1.06, .9); } 40% { transform: translateY(-26px) scale(.96, 1.06); } 75% { transform: scale(1.04, .95); } 100% { transform: none; } }
+
+  .note { margin: 64px auto 0; max-width: 640px; text-align: center; font-size: 15px; color: var(--muted); }
+  .note b { color: var(--ink); font-weight: 600; }
+
+  /* Agents */
+  .agents { padding: 120px 0 40px; display: grid; gap: 28px; }
+  .agents > h2 { font-family: var(--display); font-weight: 800; font-size: clamp(36px, 5vw, 60px); letter-spacing: -.035em; line-height: 1; margin: 0 0 20px; }
+  .agent { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: center; background: var(--paper); border-radius: 36px; padding: 36px 48px; text-decoration: none; transition: transform .2s var(--out); }
+  .agent:nth-child(odd) { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .agent:nth-child(odd) .pic { order: 2; }
+  .agent:hover { transform: translateY(-3px); }
+  .agent .pic { display: flex; justify-content: center; }
+  .agent .pic img { width: 100%; max-width: 280px; height: auto; transition: transform .35s var(--spring); }
+  .agent:hover .pic img { transform: rotate(-4deg) scale(1.04); }
+  .agent h3 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 4.4vw, 54px); letter-spacing: -.04em; line-height: 1; margin: 0 0 8px; }
+  .meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; font-size: 15px; color: var(--muted); }
+  .pill { font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 999px; background: var(--bg); color: var(--muted); }
+  .pill.live { background: #dcefe3; color: var(--live); }
+  .agent p { margin: 0 0 18px; font-size: 18px; color: var(--muted); max-width: 46ch; }
+  .agent .go { font-weight: 600; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: var(--clay); }
+
+  /* Principles */
+  .rules { padding: 100px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; }
+  .rules h4 { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -.03em; margin: 0 0 8px; }
+  .rules p { margin: 0; color: var(--muted); }
+  .rules .blob { width: 44px; height: 44px; border-radius: 46% 54% 50% 50% / 55% 45% 55% 45%; background: var(--clay); margin-bottom: 18px; box-shadow: inset -6px -8px 0 var(--clay-deep), inset 5px 5px 0 #f39aa8; }
+  .rules div:nth-child(2) .blob { background: var(--hat); box-shadow: inset -6px -8px 0 #d6a51b, inset 5px 5px 0 #f8da7c; }
+  .rules div:nth-child(3) .blob { background: #6b9be0; box-shadow: inset -6px -8px 0 #4677c2, inset 5px 5px 0 #a3c1ef; }
+
+  footer { border-top: 2px solid var(--shelf); padding: 28px 0 44px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 15px; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--ink); }
+
+  @media (max-width: 820px) {
+    .stage { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 28px; }
+    .stage::after { display: none; }
+    .agent, .agent:nth-child(odd) { grid-template-columns: 1fr; padding: 28px; text-align: left; }
+    .agent:nth-child(odd) .pic { order: 0; }
+    .agent .pic img { max-width: 200px; }
+    .rules { grid-template-columns: 1fr; gap: 36px; padding: 72px 0; }
+    nav .links { gap: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/"><img src="../../icons/workworm.svg" alt="">Worm Agents</a>
+    <div class="links">
+      <a href="#agentes">Agentes</a>
+      <a href="https://github.com/worm-agents">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Gusanitos que hacen lo aburrido</h1>
+    <p class="lead">Agentes de IA open source que corren en tu compu. Ellos laburan, vos decidís.</p>
+    <div class="cta">
+      <a class="btn solid" href="#agentes">Conocé a los worms</a>
+      <a class="btn ghost" href="https://github.com/worm-agents">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+        Ver en GitHub
+      </a>
+    </div>
+
+    <div class="stage" aria-label="Los cuatro worms">
+      <a class="actor" href="#workworm" style="--i:0"><span class="tag">WorkWorm</span><img src="../assets/clay-work.webp" alt="WorkWorm, un gusano de plastilina con casco amarillo y maletín" width="501" height="561"></a>
+      <a class="actor" href="#loveworm" style="--i:1"><span class="tag">LoveWorm</span><img src="../assets/clay-love.webp" alt="LoveWorm, un gusano de plastilina abrazando un corazón" width="476" height="510"></a>
+      <a class="actor" href="#investworm" style="--i:2"><span class="tag">InvestWorm</span><img src="../assets/clay-invest.webp" alt="InvestWorm, un gusano de plastilina con monóculo sobre una moneda" width="488" height="591"></a>
+      <a class="actor" href="#mediaworm" style="--i:3"><span class="tag">MediaWorm</span><img src="../assets/clay-media.webp" alt="MediaWorm, un gusano de plastilina sacándose una selfie" width="507" height="597"></a>
+    </div>
+    <p class="note"><b>Por ahora funcionan con Claude y están pensados para Argentina.</b> Necesitás Windows y <a href="https://claude.com/claude-code">Claude Code</a> con tu cuenta de Claude. LoveWorm también puede usar cualquier API compatible con OpenAI.</p>
+  </header>
+
+  <section class="agents" id="agentes">
+    <h2>Uno para cada cosa</h2>
+    <a class="agent" id="workworm" href="https://github.com/worm-agents/workworm">
+      <div class="pic"><img src="../assets/clay-work.webp" alt="" width="501" height="561" loading="lazy"></div>
+      <div>
+        <h3>WorkWorm</h3>
+        <div class="meta"><span>Búsqueda de trabajo</span><span class="pill live">Disponible</span></div>
+        <p>Junta ofertas de los portales de empleo de Argentina, las ordena según tu perfil, adapta tu CV y sigue a los reclutadores por correo.</p>
+        <span class="go">Ver el proyecto en GitHub</span>
+      </div>
+    </a>
+    <a class="agent" id="loveworm" href="https://github.com/worm-agents/loveworm">
+      <div class="pic"><img src="../assets/clay-love.webp" alt="" width="476" height="510" loading="lazy"></div>
+      <div>
+        <h3>LoveWorm</h3>
+        <div class="meta"><span>Citas</span><span class="pill live">Disponible</span></div>
+        <p>Ordena tus matches por interés y escribe borradores con tu forma de hablar. No se envía nada hasta que lo aprobás.</p>
+        <span class="go">Ver el proyecto en GitHub</span>
+      </div>
+    </a>
+    <a class="agent" id="investworm" href="https://github.com/worm-agents/investworm">
+      <div class="pic"><img src="../assets/clay-invest.webp" alt="" width="488" height="591" loading="lazy"></div>
+      <div>
+        <h3>InvestWorm</h3>
+        <div class="meta"><span>Inversiones</span><span class="pill">En desarrollo</span></div>
+        <p>Investiga precios, noticias y balances de las empresas que seguís y explica su razonamiento. Es una herramienta de investigación, no un consejo financiero.</p>
+        <span class="go">Ver el proyecto en GitHub</span>
+      </div>
+    </a>
+    <a class="agent" id="mediaworm" href="https://github.com/worm-agents/mediaworm">
+      <div class="pic"><img src="../assets/clay-media.webp" alt="" width="507" height="597" loading="lazy"></div>
+      <div>
+        <h3>MediaWorm</h3>
+        <div class="meta"><span>Redes sociales</span><span class="pill">En desarrollo</span></div>
+        <p>Planifica tu contenido, adapta cada posteo a cada red y escribe borradores de respuesta a los comentarios, todo para que vos lo apruebes.</p>
+        <span class="go">Ver el proyecto en GitHub</span>
+      </div>
+    </a>
+  </section>
+
+  <section class="rules" aria-label="Principios">
+    <div><span class="blob"></span><h4>Corre en tu compu</h4><p>Tus cuentas, chats y datos quedan en tu computadora. No hay ningún servidor de Worm Agents.</p></div>
+    <div><span class="blob"></span><h4>Vos tenés el control</h4><p>Los agentes redactan y sugieren. Lo que sale en tu nombre espera tu OK o un límite que pongas vos.</p></div>
+    <div><span class="blob"></span><h4>Open source</h4><p>Todos los agentes están en GitHub. Leé el código, cambialo y usalo a tu manera.</p></div>
+  </section>
+
+  <footer>
+    <span>© 2026 Worm Agents</span>
+    <a href="https://github.com/worm-agents">github.com/worm-agents</a>
+  </footer>
+</div>
+</body>
+</html>

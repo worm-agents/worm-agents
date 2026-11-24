@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worm Agents · Tinta</title>
+<meta name="description" content="Agentes de IA open source que se ocupan de las partes tediosas de la vida. Corren en tu computadora y no sale nada sin tu OK.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f5f0;
+    --scroll: #fbfaf6;
+    --sumi: #1d1c21;
+    --muted: #6b6866;
+    --pink: #d4566f;
+    --seal: #c23a32;
+    --rule: #dedbd2;
+    --display: "Shippori Mincho", "Times New Roman", serif;
+    --body: "Zen Kaku Gothic New", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: clip; }
+  body { margin: 0; background: var(--paper); color: var(--sumi); font: 17px/1.8 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--pink); outline-offset: 4px; }
+
+  nav { position: absolute; inset: 0 0 auto; z-index: 3; display: flex; justify-content: space-between; align-items: center; padding: 26px clamp(20px, 5vw, 64px); }
+  .brand { font-family: var(--display); font-weight: 700; font-size: 20px; text-decoration: none; }
+  nav .links { display: flex; gap: 28px; font-size: 15px; }
+  nav .links a { text-decoration: none; color: var(--muted); transition: color .15s ease; }
+  nav .links a:hover { color: var(--sumi); }
+
+  /* Ink hero: the fluid is light-on-black, inverted into ink-on-paper */
+  .hero { position: relative; min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: 120px clamp(20px, 5vw, 64px) 80px; isolation: isolate; }
+  #fluid { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; filter: invert(1); mix-blend-mode: multiply; pointer-events: none; }
+  .hero .inner { position: relative; text-align: center; max-width: 900px; }
+  .hero .inner::before { content: ""; position: absolute; inset: -12% -10%; z-index: -1; background: radial-gradient(closest-side, rgba(246, 245, 240, .88), rgba(246, 245, 240, .55) 60%, transparent); }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(44px, 7.4vw, 104px); line-height: 1.08; letter-spacing: -.01em; margin: 0 0 22px; overflow-wrap: break-word; }
+  .lead { font-size: 19px; color: var(--muted); max-width: 36ch; margin: 0 auto 34px; }
+  .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 13px 26px; border-radius: 2px; font-weight: 500; text-decoration: none; border: 1px solid var(--sumi); transition: background-color .2s ease, color .2s ease, transform .14s cubic-bezier(.23, 1, .32, 1); }
+  .btn:active { transform: scale(.97); }
+  .btn.ink { background: var(--sumi); color: var(--paper); }
+  .btn.ink:hover { background: #3a3940; }
+  .btn.line:hover { background: rgba(29, 28, 33, .06); }
+  .hint { margin-top: 44px; font-size: 14px; color: var(--muted); }
+
+  /* Hanging scrolls */
+  .scrolls { max-width: 1240px; margin: 0 auto; padding: 40px clamp(20px, 5vw, 64px) 0; }
+  .scrolls > h2 { font-family: var(--display); font-weight: 500; font-size: clamp(30px, 3.6vw, 46px); margin: 0 0 40px; text-align: center; }
+  .row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; align-items: start; }
+  .kake { position: relative; background: var(--scroll); padding: 26px 22px 34px; text-decoration: none; display: flex; flex-direction: column; border-top: 10px solid var(--sumi); border-bottom: 10px solid var(--sumi); box-shadow: 0 1px 0 var(--rule), 0 18px 40px -28px rgba(29, 28, 33, .45); transition: transform .4s cubic-bezier(.23, 1, .32, 1); }
+  .kake:nth-child(even) { margin-top: 56px; }
+  .kake:hover { transform: translateY(-6px) rotate(-.4deg); }
+  .kake::before { content: ""; position: absolute; left: 50%; top: -34px; width: 70px; height: 24px; transform: translateX(-50%); border: 1.5px solid var(--sumi); border-bottom: 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+  .kake img { width: 100%; height: 300px; object-fit: contain; mix-blend-mode: multiply; margin-bottom: 8px; }
+  .kake h3 { font-family: var(--display); font-weight: 700; font-size: 28px; margin: 0; line-height: 1.2; }
+  .kake .area { font-size: 14px; color: var(--muted); margin: 2px 0 12px; }
+  .kake p { margin: 0 0 18px; font-size: 15.5px; line-height: 1.75; }
+  .kake .go { margin-top: auto; font-size: 14px; color: var(--pink); }
+  .seal { position: absolute; right: 16px; top: 18px; padding: 4px 5px; border: 2px solid var(--seal); color: var(--seal); font-family: var(--display); font-weight: 700; font-size: 12px; line-height: 1.15; writing-mode: vertical-rl; border-radius: 3px; transform: rotate(4deg); opacity: .9; }
+  .seal.wip { border-style: dashed; color: var(--muted); border-color: var(--muted); }
+
+  /* One reveal: the scrolls unroll top to bottom when they enter */
+  .js .kake { clip-path: inset(0 0 100% 0); }
+  .js .kake.open { clip-path: inset(0 0 0 0); transition: clip-path 1.1s cubic-bezier(.77, 0, .175, 1) var(--d, 0s), transform .4s cubic-bezier(.23, 1, .32, 1); }
+
+  .ways { max-width: 980px; margin: 0 auto; padding: 140px clamp(20px, 5vw, 64px) 40px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; }
+  .ways h4 { font-family: var(--display); font-weight: 700; font-size: 22px; margin: 0 0 6px; }
+  .ways p { margin: 0; color: var(--muted); font-size: 16px; }
+  .ways svg { width: 58px; height: 58px; display: block; margin-bottom: 14px; }
+
+  .needs { max-width: 680px; margin: 60px auto 0; padding: 0 clamp(20px, 5vw, 64px); text-align: center; color: var(--muted); font-size: 16px; }
+  .needs b { color: var(--sumi); font-weight: 500; }
+
+  footer { max-width: 1240px; margin: 100px auto 0; padding: 24px clamp(20px, 5vw, 64px) 44px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--sumi); }
+
+  @media (max-width: 960px) {
+    .row { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 72px; }
+    .kake:nth-child(even) { margin-top: 0; }
+    .ways { grid-template-columns: 1fr; gap: 32px; padding-top: 96px; }
+  }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) {
+    .js .kake { clip-path: none; }
+    .kake, .btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="/">Worm Agents</a>
+  <div class="links"><a href="#agentes">Agentes</a><a href="https://github.com/worm-agents">GitHub</a></div>
+</nav>
+
+<header class="hero">
+  <canvas id="fluid" aria-hidden="true"></canvas>
+  <div class="inner">
+    <h1>Ellos hacen el trazo. Vos ponés la firma.</h1>
+    <p class="lead">Agentes de IA open source para las partes tediosas de la vida. Corren en tu computadora y nada sale sin tu OK.</p>
+    <div class="cta">
+      <a class="btn ink" href="#agentes">Conocé a los worms</a>
+      <a class="btn line" href="https://github.com/worm-agents">Ver en GitHub</a>
+    </div>
+    <p class="hint">Pasá el mouse: es tinta.</p>
+  </div>
+</header>
+
+<section class="scrolls" id="agentes">
+  <h2>Cuatro worms, cuatro oficios</h2>
+  <div class="row">
+    <a class="kake" href="https://github.com/worm-agents/workworm" style="--d:0s">
+      <span class="seal">Disponible</span>
+      <img src="../assets/ink-work.webp" alt="WorkWorm pintado en tinta, con casco y maletín" width="260" height="440" loading="lazy">
+      <h3>WorkWorm</h3>
+      <div class="area">Búsqueda de trabajo</div>
+      <p>Junta ofertas de los portales de empleo de Argentina, las ordena según tu perfil, adapta tu CV y sigue a los reclutadores por correo.</p>
+      <span class="go">Ver en GitHub</span>
+    </a>
+    <a class="kake" href="https://github.com/worm-agents/loveworm" style="--d:.12s">
+      <span class="seal">Disponible</span>
+      <img src="../assets/ink-love.webp" alt="LoveWorm pintado en tinta, con un corazón" width="195" height="440" loading="lazy">
+      <h3>LoveWorm</h3>
+      <div class="area">Citas</div>
+      <p>Ordena tus matches por interés y escribe borradores con tu forma de hablar. No se envía nada hasta que lo aprobás.</p>
+      <span class="go">Ver en GitHub</span>
+    </a>
+    <a class="kake" href="https://github.com/worm-agents/investworm" style="--d:.24s">
+      <span class="seal wip">En desarrollo</span>
+      <img src="../assets/ink-invest.webp" alt="InvestWorm pintado en tinta, con monóculo sobre una moneda" width="205" height="440" loading="lazy">
+      <h3>InvestWorm</h3>
+      <div class="area">Inversiones</div>
+      <p>Investiga precios, noticias y balances de las empresas que seguís y explica su razonamiento. Es una herramienta de investigación, no un consejo financiero.</p>
+      <span class="go">Ver en GitHub</span>
+    </a>
+    <a class="kake" href="https://github.com/worm-agents/mediaworm" style="--d:.36s">
+      <span class="seal wip">En desarrollo</span>
+      <img src="../assets/ink-media.webp" alt="MediaWorm pintado en tinta, con un celular y un globo de diálogo" width="250" height="440" loading="lazy">
+      <h3>MediaWorm</h3>
+      <div class="area">Redes sociales</div>
+      <p>Planifica tu contenido, adapta cada posteo a cada red y escribe borradores de respuesta a los comentarios, todo para que vos lo apruebes.</p>
+      <span class="go">Ver en GitHub</span>
+    </a>
+  </div>
+</section>
+
+<section class="ways" aria-label="Principios">
+  <div>
+    <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 6c13 0 23 10 23 23 0 12-9 22-22 23C18 53 8 44 7 31 6 19 14 9 26 7" fill="none" stroke="#1d1c21" stroke-width="4.5" stroke-linecap="round"/></svg>
+    <h4>Corre en tu compu</h4><p>Tus cuentas, chats y datos quedan en tu computadora. No hay ningún servidor de Worm Agents.</p>
+  </div>
+  <div>
+    <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 6c13 0 23 10 23 23 0 12-9 22-22 23C18 53 8 44 7 31 6 19 14 9 26 7" fill="none" stroke="#d4566f" stroke-width="4.5" stroke-linecap="round"/></svg>
+    <h4>Vos tenés el control</h4><p>Los agentes redactan y sugieren. Lo que sale en tu nombre espera tu OK o un límite que pongas vos.</p>
+  </div>
+  <div>
+    <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 6c13 0 23 10 23 23 0 12-9 22-22 23C18 53 8 44 7 31 6 19 14 9 26 7" fill="none" stroke="#1d1c21" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="6 5"/></svg>
+    <h4>Open source</h4><p>Todos los agentes están en GitHub. Leé el código, cambialo y usalo a tu manera.</p>
+  </div>
+</section>
+
+<p class="needs"><b>Por ahora funcionan con Claude y están pensados para Argentina.</b> Necesitás una PC con Windows y <a href="https://claude.com/claude-code">Claude Code</a> con tu cuenta de Claude: usan tu propia suscripción, sin otra API key. LoveWorm también puede usar cualquier API compatible con OpenAI.</p>
+
+<footer><span>© 2026 Worm Agents</span><a href="https://github.com/worm-agents">github.com/worm-agents</a></footer>
+
+<script>
+  // Fluid tuned to read as ink: colours are the complements of the final inks, the canvas is inverted
+  window.FLUID_CONFIG = { BLOOM: false, SUNRAYS: false, SHADING: true, DENSITY_DISSIPATION: 1.4, VELOCITY_DISSIPATION: 0.6, CURL: 22, SPLAT_RADIUS: 0.22, COLOR_UPDATE_SPEED: 4 };
+  window.FLUID_PALETTE = [[0.17, 0.66, 0.56], [0.17, 0.66, 0.56], [0.75, 0.75, 0.7], [0.8, 0.78, 0.5]];
+  window.FLUID_INTENSITY = 0.8;
+  window.FLUID_INITIAL_SPLATS = innerWidth < 700 ? 4 : 10;
+  window.FLUID_DITHER = '../assets/fluid-dither.png';
+
+  document.documentElement.classList.add('js');
+  (() => {
+    const ks = document.querySelectorAll('.kake');
+    if (!('IntersectionObserver' in window)) { ks.forEach(k => k.classList.add('open')); return; }
+    // observe the row (an element clipped by clip-path never reports as intersecting)
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { ks.forEach(k => k.classList.add('open')); io.disconnect(); } }), { threshold: .12 });
+    io.observe(document.querySelector('.scrolls .row'));
+  })();
+</script>
+<script src="../assets/fluid.js"></script>
+</body>
+</html>
