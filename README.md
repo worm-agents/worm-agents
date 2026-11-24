@@ -13,4 +13,4 @@ Por ahora los agentes están pensados para Argentina y necesitan Windows y [Clau
 
 ## Desarrollo
 
-Es un sitio estático (`index.html`, `favicon.svg` e `icons/`), sin build. Para verlo, abrí `index.html` en el navegador. Cada push a `main` se publica solo en worm-agents.com.
+Es un sitio estático (`index.html`, `favicon.svg`, `icons/` e `img/`), sin build. Las ilustraciones de los worms en `img/` se generaron con Gemini. Para verlo, abrí `index.html` en el navegador. Cada push a `main` se publica solo en worm-agents.com.
